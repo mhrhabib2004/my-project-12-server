@@ -30,6 +30,7 @@ async function run() {
     const userCollection = client.db("matrimony").collection("users");
     const reviewCollection = client.db("matrimony").collection("reviews");
     const bioCollection = client.db("matrimony").collection("bio");
+    const favouritbioCollection = client.db("matrimony").collection("addfavourits");
   
    // jwt related api
    app.post('/jwt', async (req, res) => {
@@ -64,14 +65,23 @@ async function run() {
       next();
     }
     // add bio data code
-    app.post('/bio',async(req,res)=>{
-        
+    app.post('/bio',async(req,res)=>{  
       const bioData = req.body;
-    
       const result =await bioCollection.insertOne(bioData);
-      
       res.send(result);
   })
+
+  app.get('/bio', async(req, res) =>{
+    const result = await bioCollection.find().toArray();
+    res.send(result);
+})
+
+// addfavourits data code
+app.post('/addfavourits',async(req,res)=>{  
+  const bioData = req.body;
+  const result =await favouritbioCollection.insertOne(bioData);
+  res.send(result);
+})
 
     app.get('/premium', async(req, res) =>{
         const result = await premiumCollection.find().toArray();
@@ -121,10 +131,7 @@ async function run() {
         res.send(result);
       });
 
-      app.get('/bio', async(req, res) =>{
-        const result = await bioCollection.find().toArray();
-        res.send(result);
-    })
+   
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
