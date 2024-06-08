@@ -29,7 +29,49 @@ async function run() {
     const premiumCollection = client.db("matrimony").collection("premium");
     const userCollection = client.db("matrimony").collection("users");
     const reviewCollection = client.db("matrimony").collection("reviews");
+    const bioCollection = client.db("matrimony").collection("bio");
   
+   // jwt related api
+   app.post('/jwt', async (req, res) => {
+    const user = req.body;
+    const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+    res.send({ token });
+  })
+   // middlewares 
+   const verifyToken = (req, res, next) => {
+    console.log('inside verify token', req.headers.authorization);
+    if (!req.headers.authorization) {
+      return res.status(401).send({ message: 'unauthorized access' });
+    }
+    const token = req.headers.authorization.split(' ')[1];
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+      if (err) {
+        return res.status(401).send({ message: 'unauthorized access' })
+      }
+      req.decoded = decoded;
+      next();
+    })
+  }
+    // use verify admin after verifyToken
+    const verifyAdmin = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      const isAdmin = user?.role === 'admin';
+      if (!isAdmin) {
+        return res.status(403).send({ message: 'forbidden access' });
+      }
+      next();
+    }
+    // add bio data code
+    app.post('/bio',async(req,res)=>{
+        
+      const bioData = req.body;
+    
+      const result =await bioCollection.insertOne(bioData);
+      
+      res.send(result);
+  })
 
     app.get('/premium', async(req, res) =>{
         const result = await premiumCollection.find().toArray();
@@ -47,7 +89,6 @@ async function run() {
         if (email !== req.decoded.email) {
           return res.status(403).send({ message: 'forbidden access' })
         }
-  
         const query = { email: email };
         const user = await userCollection.findOne(query);
         let admin = false;
@@ -79,6 +120,11 @@ async function run() {
         const result = await userCollection.insertOne(user);
         res.send(result);
       });
+
+      app.get('/bio', async(req, res) =>{
+        const result = await bioCollection.find().toArray();
+        res.send(result);
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
