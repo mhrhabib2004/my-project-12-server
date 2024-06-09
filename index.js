@@ -64,6 +64,39 @@ async function run() {
       }
       next();
     }
+
+    // manege user
+    app.get('/users', async (req, res) => {
+      const { username } = req.query;
+      let query = {};
+      if (username) {
+        query = { name: { $regex: username, $options: 'i' } };
+      }
+      const users = await userCollection.find(query).toArray();
+      res.send(users);
+    });
+
+    // Make a user admin
+    app.post('/users/:id/makeAdmin', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: { role: 'admin' }
+      };
+      const result = await userCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+    // Make a user premium
+    app.post('/users/:id/makePremium', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: { isPremium: true }
+      };
+      const result = await userCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
     // add bio data code
     app.post('/bio',async(req,res)=>{  
       const bioData = req.body;
@@ -105,32 +138,32 @@ app.delete('/addfavourits/:id',async(req,res)=>{
         res.send(result);
     })
 
-    app.get('/users/admin/:email', async (req, res) => {
-        const email = req.params.email;
+    // app.get('/users/admin/:email', async (req, res) => {
+    //     const email = req.params.email;
   
-        if (email !== req.decoded.email) {
-          return res.status(403).send({ message: 'forbidden access' })
-        }
-        const query = { email: email };
-        const user = await userCollection.findOne(query);
-        let admin = false;
-        if (user) {
-          admin = user?.role === 'admin';
-        }
-        res.send({ admin });
-      })
+    //     if (email !== req.decoded.email) {
+    //       return res.status(403).send({ message: 'forbidden access' })
+    //     }
+    //     const query = { email: email };
+    //     const user = await userCollection.findOne(query);
+    //     let admin = false;
+    //     if (user) {
+    //       admin = user?.role === 'admin';
+    //     }
+    //     res.send({ admin });
+    //   })
 
-      app.patch('/users/admin/:id', async (req, res) => {
-        const id = req.params.id;
-        const filter = { _id: new ObjectId(id) };
-        const updatedDoc = {
-          $set: {
-            role: 'admin'
-          }
-        }
-        const result = await userCollection.updateOne(filter, updatedDoc);
-        res.send(result);
-      })
+      // app.patch('/users/admin/:id', async (req, res) => {
+      //   const id = req.params.id;
+      //   const filter = { _id: new ObjectId(id) };
+      //   const updatedDoc = {
+      //     $set: {
+      //       role: 'admin'
+      //     }
+      //   }
+      //   const result = await userCollection.updateOne(filter, updatedDoc);
+      //   res.send(result);
+      // })
 
     app.post('/users', async (req, res) => {
         const user = req.body;
@@ -142,6 +175,33 @@ app.delete('/addfavourits/:id',async(req,res)=>{
         const result = await userCollection.insertOne(user);
         res.send(result);
       });
+
+
+        // Dashboard Data
+    app.get('/dashboard', async (req, res) => {
+      try {
+        const totalBiodataCount = await bioCollection.countDocuments();
+        const maleBiodataCount = await bioCollection.countDocuments({ biodataType: 'Male' });
+        const femaleBiodataCount = await bioCollection.countDocuments({ biodataType: 'Female' });
+        const premiumBiodataCount = await bioCollection.countDocuments({ isPremium: true });
+        
+        // Assuming there's a revenue field in each biodata document for simplicity
+        const totalRevenueData = await bioCollection.aggregate([
+          { $group: { _id: null, totalRevenue: { $sum: "$revenue" } } }
+        ]).toArray();
+        const totalRevenue = totalRevenueData[0]?.totalRevenue || 0;
+
+        res.send({
+          totalBiodataCount,
+          maleBiodataCount,
+          femaleBiodataCount,
+          premiumBiodataCount,
+          totalRevenue
+        });
+      } catch (error) {
+        res.status(500).send({ message: 'Error fetching dashboard data', error });
+      }
+    });
 
    
 
