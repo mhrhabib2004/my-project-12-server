@@ -83,6 +83,18 @@ app.post('/addfavourits',async(req,res)=>{
   res.send(result);
 })
 
+app.get('/addfavourits', async(req, res) =>{
+  const result = await favouritbioCollection.find().toArray();
+  res.send(result);
+})
+
+app.delete('/addfavourits/:id',async(req,res)=>{
+  const id =req.params.id;
+  const query={_id: new ObjectId(id)}
+  const result = await favouritbioCollection.deleteOne(query);
+  res.send(result)
+})
+
     app.get('/premium', async(req, res) =>{
         const result = await premiumCollection.find().toArray();
         res.send(result);
