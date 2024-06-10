@@ -86,27 +86,6 @@ async function run() {
       const result = await userCollection.updateOne(query, updateDoc)
       res.send(result)
     })
-    // Make a user admin
-    // app.post('/users/:id/makeAdmin', async (req, res) => {
-    //   const id = req.params.id;
-    //   const filter = { _id: new ObjectId(id) };
-    //   const updateDoc = {
-    //     $set: { role: 'admin' }
-    //   };
-    //   const result = await userCollection.updateOne(filter, updateDoc);
-    //   res.send(result);
-    // });
-
-    // // Make a user premium
-    // app.post('/users/:id/makePremium', async (req, res) => {
-    //   const id = req.params.id;
-    //   const filter = { _id: new ObjectId(id) };
-    //   const updateDoc = {
-    //     $set: { isPremium: true }
-    //   };
-    //   const result = await userCollection.updateOne(filter, updateDoc);
-    //   res.send(result);
-    // });
 
     // add bio data code
     app.post('/bio',async(req,res)=>{  
@@ -165,17 +144,7 @@ app.delete('/addfavourits/:id',async(req,res)=>{
       res.send({ admin });
     })
 
-      // app.patch('/users/admin/:id',  async (req, res) => {
-      //   const id = req.params.id;
-      //   const filter = { _id: new ObjectId(id) };
-      //   const updatedDoc = {
-      //     $set: {
-      //       role: 'admin'
-      //     }
-      //   }
-      //   const result = await userCollection.updateOne(filter, updatedDoc);
-      //   res.send(result);
-      // })
+      
       app.get('/users/:email', async (req, res) => {
         const email = req.params.email
         const result = await userCollection.findOne({ email })
