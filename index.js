@@ -77,26 +77,27 @@ async function run() {
     });
 
     // Make a user admin
-    app.post('/users/:id/makeAdmin', async (req, res) => {
-      const id = req.params.id;
-      const filter = { _id: new ObjectId(id) };
-      const updateDoc = {
-        $set: { role: 'admin' }
-      };
-      const result = await userCollection.updateOne(filter, updateDoc);
-      res.send(result);
-    });
+    // app.post('/users/:id/makeAdmin', async (req, res) => {
+    //   const id = req.params.id;
+    //   const filter = { _id: new ObjectId(id) };
+    //   const updateDoc = {
+    //     $set: { role: 'admin' }
+    //   };
+    //   const result = await userCollection.updateOne(filter, updateDoc);
+    //   res.send(result);
+    // });
 
     // Make a user premium
-    app.post('/users/:id/makePremium', async (req, res) => {
-      const id = req.params.id;
-      const filter = { _id: new ObjectId(id) };
-      const updateDoc = {
-        $set: { isPremium: true }
-      };
-      const result = await userCollection.updateOne(filter, updateDoc);
-      res.send(result);
-    });
+    // app.post('/users/:id/makePremium', async (req, res) => {
+    //   const id = req.params.id;
+    //   const filter = { _id: new ObjectId(id) };
+    //   const updateDoc = {
+    //     $set: { isPremium: true }
+    //   };
+    //   const result = await userCollection.updateOne(filter, updateDoc);
+    //   res.send(result);
+    // });
+
     // add bio data code
     app.post('/bio',async(req,res)=>{  
       const bioData = req.body;
@@ -138,22 +139,23 @@ app.delete('/addfavourits/:id',async(req,res)=>{
         res.send(result);
     })
 
-    // app.get('/users/admin/:email', async (req, res) => {
-    //     const email = req.params.email;
-  
-    //     if (email !== req.decoded.email) {
-    //       return res.status(403).send({ message: 'forbidden access' })
-    //     }
-    //     const query = { email: email };
-    //     const user = await userCollection.findOne(query);
-    //     let admin = false;
-    //     if (user) {
-    //       admin = user?.role === 'admin';
-    //     }
-    //     res.send({ admin });
-    //   })
+    app.get('/users/admin/:email',  async (req, res) => {
+      const email = req.params.email;
 
-      // app.patch('/users/admin/:id', async (req, res) => {
+      if (email !== req.decoded.email) {
+        return res.status(403).send({ message: 'forbidden access' })
+      }
+
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      let admin = false;
+      if (user) {
+        admin = user?.role === 'admin';
+      }
+      res.send({ admin });
+    })
+
+      // app.patch('/users/admin/:id',  async (req, res) => {
       //   const id = req.params.id;
       //   const filter = { _id: new ObjectId(id) };
       //   const updatedDoc = {
@@ -164,6 +166,11 @@ app.delete('/addfavourits/:id',async(req,res)=>{
       //   const result = await userCollection.updateOne(filter, updatedDoc);
       //   res.send(result);
       // })
+      app.get('/users/:email', async (req, res) => {
+        const email = req.params.email
+        const result = await userCollection.findOne({ email })
+        res.send(result)
+      })
 
     app.post('/users', async (req, res) => {
         const user = req.body;
@@ -175,6 +182,33 @@ app.delete('/addfavourits/:id',async(req,res)=>{
         const result = await userCollection.insertOne(user);
         res.send(result);
       });
+
+      // add code 
+      app.get('/biodata/:id', async (req, res) => {
+        const id = req.params.id;
+        const biodata = await userCollection.findOne({ _id: new ObjectId(id) });
+        res.send(biodata);
+      });
+      
+    
+      
+      // Request contact information
+      app.post('/contact-request', async (req, res) => {
+        const { userId, biodataId, email } = req.body;
+        const contactRequest = {
+          userId: new ObjectId(userId),
+          biodataId: new ObjectId(biodataId),
+          email,
+          status: 'pending',
+          createdAt: new Date()
+        };
+        const result = await userCollection.updateOne(
+          { _id: new ObjectId(userId) },
+          { $push: { contactRequests: contactRequest } }
+        );
+        res.send(result);
+      });
+      // end code
 
 
         // Dashboard Data
