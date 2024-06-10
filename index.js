@@ -81,7 +81,7 @@ async function run() {
       const user = req.body
       const query = { email }
       const updateDoc = {
-        $set: { ...user, timestamp: Date.now() },
+        $set: { ...user, timestamp: Date.now(), },
       }
       const result = await userCollection.updateOne(query, updateDoc)
       res.send(result)
