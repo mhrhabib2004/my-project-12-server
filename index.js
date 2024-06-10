@@ -76,6 +76,16 @@ async function run() {
       res.send(users);
     });
 
+    app.patch('/users/update/:email', async (req, res) => {
+      const email = req.params.email
+      const user = req.body
+      const query = { email }
+      const updateDoc = {
+        $set: { ...user, timestamp: Date.now() },
+      }
+      const result = await userCollection.updateOne(query, updateDoc)
+      res.send(result)
+    })
     // Make a user admin
     // app.post('/users/:id/makeAdmin', async (req, res) => {
     //   const id = req.params.id;
@@ -87,7 +97,7 @@ async function run() {
     //   res.send(result);
     // });
 
-    // Make a user premium
+    // // Make a user premium
     // app.post('/users/:id/makePremium', async (req, res) => {
     //   const id = req.params.id;
     //   const filter = { _id: new ObjectId(id) };
