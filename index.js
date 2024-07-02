@@ -202,6 +202,22 @@ app.delete('/addfavourits/:id',async(req,res)=>{
       });
       // end code
 
+        // Endpoint to get all premium approval requests
+  app.get('/dashboard/approvedPremium',  async (req, res) => {
+    const requests = await premiumCollection.find({ status: 'pending' }).toArray();
+    res.send(requests);
+  });
+
+  // Endpoint to make a user premium
+  app.post('/dashboard/makePremium',  async (req, res) => {
+    const { biodataId } = req.body;
+    const result = await bioCollection.updateOne(
+      { _id: new ObjectId(biodataId) },
+      { $set: { isPremium: true } }
+    );
+    res.send(result);
+  });
+
 
         // Dashboard Data
     app.get('/dashboard', async (req, res) => {
